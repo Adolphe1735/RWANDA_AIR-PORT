@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rwanda Air | Book a Flight</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="index.html" class="logo">
+                <i class="fas fa-plane"></i> Rwanda Air
+            </a>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="booking.html" class="active">Book Flight</a></li>
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="login.html">Login</a></li>
+            </ul>
+            <div class="menu-toggle">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Booking Hero -->
+    <section class="booking-hero">
+        <div class="container">
+            <h1>Book Your Flight</h1>
+            <p>Find the best flights to destinations around the world</p>
+        </div>
+    </section>
+
+    <!-- Booking Form -->
+    <div class="container">
+        <div class="booking-container">
+            <div class="booking-tabs">
+                <button class="tab-btn active" data-tab="one-way">One Way</button>
+                <button class="tab-btn" data-tab="round-trip">Round Trip</button>
+                <button class="tab-btn" data-tab="multi-city">Multi-City</button>
+            </div>
+            
+            <form id="bookingForm" class="booking-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="from">From</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-plane-departure"></i>
+                            <select id="from" required>
+                                <option value="">Select departure city</option>
+                                <option value="KGL">Kigali (KGL)</option>
+                                <option value="NBO">Nairobi (NBO)</option>
+                                <option value="JNB">Johannesburg (JNB)</option>
+                                <option value="ADD">Addis Ababa (ADD)</option>
+                                <option value="DXB">Dubai (DXB)</option>
+                                <option value="CDG">Paris (CDG)</option>
+                                <option value="LHR">London (LHR)</option>
+                                <option value="JFK">New York (JFK)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="to">To</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-plane-arrival"></i>
+                            <select id="to" required>
+                                <option value="">Select destination city</option>
+                                <option value="KGL">Kigali (KGL)</option>
+                                <option value="NBO">Nairobi (NBO)</option>
+                                <option value="JNB">Johannesburg (JNB)</option>
+                                <option value="ADD">Addis Ababa (ADD)</option>
+                                <option value="DXB">Dubai (DXB)</option>
+                                <option value="CDG">Paris (CDG)</option>
+                                <option value="LHR">London (LHR)</option>
+                                <option value="JFK">New York (JFK)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="departure">Departure Date</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-calendar-alt"></i>
+                            <input type="date" id="departure" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" id="returnDateGroup">
+                        <label for="return">Return Date</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-calendar-alt"></i>
+                            <input type="date" id="return">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="passengers">Passengers</label>
+                        <div class="passenger-selector">
+                            <div class="passenger-input">
+                                <span id="passengerCount">1 Passenger</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                            <div class="passenger-dropdown">
+                                <div class="passenger-type">
+                                    <span>Adults (12+ years)</span>
+                                    <div class="passenger-controls">
+                                        <button type="button" class="passenger-btn" data-type="adults" data-action="decrease">-</button>
+                                        <span id="adultsCount">1</span>
+                                        <button type="button" class="passenger-btn" data-type="adults" data-action="increase">+</button>
+                                    </div>
+                                </div>
+                                <div class="passenger-type">
+                                    <span>Children (2-11 years)</span>
+                                    <div class="passenger-controls">
+                                        <button type="button" class="passenger-btn" data-type="children" data-action="decrease">-</button>
+                                        <span id="childrenCount">0</span>
+                                        <button type="button" class="passenger-btn" data-type="children" data-action="increase">+</button>
+                                    </div>
+                                </div>
+                                <div class="passenger-type">
+                                    <span>Infants (under 2)</span>
+                                    <div class="passenger-controls">
+                                        <button type="button" class="passenger-btn" data-type="infants" data-action="decrease">-</button>
+                                        <span id="infantsCount">0</span>
+                                        <button type="button" class="passenger-btn" data-type="infants" data-action="increase">+</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="class">Class</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-chair"></i>
+                            <select id="class">
+                                <option value="economy">Economy</option>
+                                <option value="premium">Premium Economy</option>
+                                <option value="business">Business Class</option>
+                                <option value="first">First Class</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn-primary btn-block btn-large">
+                    <i class="fas fa-search"></i> Search Flights
+                </button>
+            </form>
+            
+            <!-- Flight Results (Initially Hidden) -->
+            <div id="flightResults" class="flight-results" style="display: none;">
+                <h2 class="section-title">Available Flights</h2>
+                <div id="resultsContainer">
+                    <!-- Flight results will be generated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <i class="fas fa-plane"></i> Rwanda Air
+                </div>
+                <div class="footer-links">
+                    <h4>Booking</h4>
+                    <ul>
+                        <li><a href="booking.html">Find Flights</a></li>
+                        <li><a href="#">Manage Booking</a></li>
+                        <li><a href="#">Flight Status</a></li>
+                        <li><a href="#">Check-in</a></li>
+                    </ul>
+                </div>
+                <div class="footer-contact">
+                    <h4>Need Help?</h4>
+                    <p><i class="fas fa-phone"></i> +250 788 123 456</p>
+                    <p><i class="fas fa-envelope"></i> bookings@rwandair.com</p>
+                    <p><i class="fas fa-clock"></i> Mon-Sun: 6am - 10pm</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2023 Rwanda Air. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/auth.js"></script>
+    <script src="js/booking.js"></script>
+    <script>
+        // Mobile menu toggle
+        document.querySelector('.menu-toggle').addEventListener('click', function() {
+            document.querySelector('.nav-links').classList.toggle('active');
+        });
+    </script>
+</body>
+</html>
