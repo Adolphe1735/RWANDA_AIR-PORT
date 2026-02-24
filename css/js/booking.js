@@ -1,525 +1,616 @@
-// Booking functionality for Rwanda Air website
+// js/booking.js - Enhanced Booking System
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize booking functionality
-    initBooking();
-    
-    // Check if user is logged in (for personalized experience)
-    const userData = localStorage.getItem('rwandair_user');
-    if (userData) {
-        const user = JSON.parse(userData);
-        console.log(`Welcome back, ${user.name}!`);
+class BookingSystem {
+    constructor() {
+        this.flights = this.loadFlights();
+        this.currentBooking = null;
+        this.selectedFlight = null;
+        this.selectedSeats = [];
+        this.passengers = {
+            adults: 1,
+            children: 0,
+            infants: 0
+        };
+        this.init();
     }
-});
 
-function initBooking() {
-    // Tab switching
-    const tabBtns = document.querySelectorAll('.tab-btn');
-    tabBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            // Remove active class from all tabs
-            tabBtns.forEach(b => b.classList.remove('active'));
-            
-            // Add active class to clicked tab
-            this.classList.add('active');
-            
-            // Handle tab-specific functionality
-            const tab = this.getAttribute('data-tab');
-            handleTabChange(tab);
+    init() {
+        this.setupEventListeners();
+        this.loadFromStorage();
+    }
+
+    setupEventListeners() {
+        // Tab switching
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                this.switchTab(e.target.dataset.tab);
+            });
         });
-    });
-    
-    // Passenger counter
-    const passengerBtns = document.querySelectorAll('.passenger-btn');
-    passengerBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            const type = this.getAttribute('data-type');
-            const action = this.getAttribute('data-action');
-            updatePassengerCount(type, action);
+
+        // Passenger selector
+        document.querySelectorAll('.passenger-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const type = btn.dataset.type;
+                const action = btn.dataset.action;
+                this.updatePassengerCount(type, action);
+            });
         });
-    });
-    
-    // Form submission
-    const bookingForm = document.getElementById('bookingForm');
-    if (bookingForm) {
-        bookingForm.addEventListener('submit', handleBookingSubmit);
-    }
-    
-    // Set minimum date for departure to today
-    const today = new Date().toISOString().split('T')[0];
-    const departureInput = document.getElementById('departure');
-    if (departureInput) {
-        departureInput.setAttribute('min', today);
-        
-        // Set return date minimum to departure date
-        departureInput.addEventListener('change', function() {
-            const returnInput = document.getElementById('return');
-            if (returnInput) {
-                returnInput.setAttribute('min', this.value);
-            }
-        });
-    }
-    
-    // Initialize passenger count display
-    updatePassengerDisplay();
-}
 
-function handleTabChange(tab) {
-    const returnDateGroup = document.getElementById('returnDateGroup');
-    
-    if (tab === 'one-way') {
-        // Hide return date for one-way
-        returnDateGroup.style.display = 'none';
-        document.getElementById('return').removeAttribute('required');
-    } else if (tab === 'round-trip') {
-        // Show return date for round trip
-        returnDateGroup.style.display = 'block';
-        document.getElementById('return').setAttribute('required', 'true');
-    } else if (tab === 'multi-city') {
-        // Show return date for multi-city (handled differently in a real app)
-        returnDateGroup.style.display = 'block';
-        document.getElementById('return').setAttribute('required', 'true');
-        // In a real app, we would show additional city inputs here
-    }
-}
-
-function updatePassengerCount(type, action) {
-    // Get current count
-    let countElement = document.getElementById(`${type}Count`);
-    let currentCount = parseInt(countElement.textContent);
-    
-    // Update based on action
-    if (action === 'increase') {
-        // Limit maximum passengers
-        if (currentCount < 9) {
-            countElement.textContent = currentCount + 1;
+        // Booking form submission
+        const bookingForm = document.getElementById('bookingForm');
+        if (bookingForm) {
+            bookingForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.searchFlights();
+            });
         }
-    } else if (action === 'decrease') {
-        // Limit minimum passengers (0 for children/infants, 1 for adults)
-        if (type === 'adults') {
-            if (currentCount > 1) {
-                countElement.textContent = currentCount - 1;
-            }
-        } else {
-            if (currentCount > 0) {
-                countElement.textContent = currentCount - 1;
-            }
-        }
-    }
-    
-    // Update display
-    updatePassengerDisplay();
-}
 
-function updatePassengerDisplay() {
-    // Get counts
-    const adults = parseInt(document.getElementById('adultsCount').textContent);
-    const children = parseInt(document.getElementById('childrenCount').textContent);
-    const infants = parseInt(document.getElementById('infantsCount').textContent);
-    
-    // Calculate total
-    const total = adults + children + infants;
-    
-    // Update display
-    const passengerCountElement = document.getElementById('passengerCount');
-    if (total === 1) {
-        passengerCountElement.textContent = '1 Passenger';
-    } else {
-        passengerCountElement.textContent = `${total} Passengers`;
-    }
-}
-
-function handleBookingSubmit(e) {
-    e.preventDefault();
-    
-    // Get form values
-    const from = document.getElementById('from').value;
-    const to = document.getElementById('to').value;
-    const departure = document.getElementById('departure').value;
-    const returnDate = document.getElementById('return').value;
-    const flightClass = document.getElementById('class').value;
-    
-    // Get passenger counts
-    const adults = parseInt(document.getElementById('adultsCount').textContent);
-    const children = parseInt(document.getElementById('childrenCount').textContent);
-    const infants = parseInt(document.getElementById('infantsCount').textContent);
-    
-    // Get active tab
-    const activeTab = document.querySelector('.tab-btn.active').getAttribute('data-tab');
-    
-    // Validate form
-    if (!from || !to) {
-        showAlert('Please select departure and destination cities', 'error');
-        return;
-    }
-    
-    if (from === to) {
-        showAlert('Departure and destination cannot be the same', 'error');
-        return;
-    }
-    
-    if (!departure) {
-        showAlert('Please select a departure date', 'error');
-        return;
-    }
-    
-    if (activeTab !== 'one-way' && !returnDate) {
-        showAlert('Please select a return date', 'error');
-        return;
-    }
-    
-    if (activeTab !== 'one-way' && returnDate <= departure) {
-        showAlert('Return date must be after departure date', 'error');
-        return;
-    }
-    
-    // Show searching message
-    showAlert('Searching for available flights...', 'info');
-    
-    // Simulate API call delay
-    setTimeout(() => {
-        // Generate mock flight results
-        const flights = generateMockFlights(from, to, departure, returnDate, flightClass, adults + children + infants);
-        
-        // Display results
-        displayFlightResults(flights);
-        
-        // Scroll to results
-        document.getElementById('flightResults').scrollIntoView({ behavior: 'smooth' });
-    }, 1500);
-}
-
-function generateMockFlights(from, to, departure, returnDate, flightClass, passengers) {
-    // Mock flight data
-    const airlines = ['Rwanda Air', 'Partner Airlines'];
-    const flightNumbers = ['WB 501', 'WB 602', 'WB 703', 'WB 804'];
-    
-    // Map airport codes to city names
-    const airportNames = {
-        'KGL': 'Kigali',
-        'NBO': 'Nairobi',
-        'JNB': 'Johannesburg',
-        'ADD': 'Addis Ababa',
-        'DXB': 'Dubai',
-        'CDG': 'Paris',
-        'LHR': 'London',
-        'JFK': 'New York'
-    };
-    
-    // Generate flights for departure
-    const departureFlights = [];
-    for (let i = 0; i < 3; i++) {
-        // Generate random times
-        const hour = 6 + Math.floor(Math.random() * 12); // Between 6am and 6pm
-        const minute = Math.floor(Math.random() * 4) * 15; // 0, 15, 30, or 45
-        const time = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-        
-        // Calculate duration (3-12 hours depending on destination)
-        let durationHours;
-        if (to === 'DXB' || to === 'ADD') {
-            durationHours = 3 + Math.floor(Math.random() * 2); // 3-4 hours
-        } else if (to === 'JNB' || to === 'NBO') {
-            durationHours = 2 + Math.floor(Math.random() * 2); // 2-3 hours
-        } else if (to === 'CDG' || to === 'LHR') {
-            durationHours = 8 + Math.floor(Math.random() * 2); // 8-9 hours
-        } else if (to === 'JFK') {
-            durationHours = 12 + Math.floor(Math.random() * 2); // 12-13 hours
-        } else {
-            durationHours = 4 + Math.floor(Math.random() * 4); // 4-7 hours
+        // Return date toggle based on trip type
+        const tripType = document.querySelector('input[name="tripType"]');
+        if (tripType) {
+            tripType.addEventListener('change', (e) => {
+                this.toggleReturnDate(e.target.value);
+            });
         }
-        
-        // Calculate price based on class and destination
-        let basePrice;
-        if (to === 'DXB' || to === 'ADD') {
-            basePrice = 350;
-        } else if (to === 'JNB' || to === 'NBO') {
-            basePrice = 250;
-        } else if (to === 'CDG' || to === 'LHR') {
-            basePrice = 700;
-        } else if (to === 'JFK') {
-            basePrice = 900;
-        } else {
-            basePrice = 500;
-        }
-        
-        // Adjust price based on class
-        let classMultiplier = 1;
-        if (flightClass === 'premium') classMultiplier = 1.5;
-        if (flightClass === 'business') classMultiplier = 2.5;
-        if (flightClass === 'first') classMultiplier = 4;
-        
-        // Calculate final price
-        const price = Math.round(basePrice * classMultiplier * passengers);
-        
-        departureFlights.push({
-            id: `dep-${i}`,
-            flightNumber: flightNumbers[i],
-            airline: airlines[i % airlines.length],
-            from: airportNames[from] || from,
-            to: airportNames[to] || to,
-            departureTime: time,
-            departureDate: departure,
-            duration: `${durationHours}h ${Math.floor(Math.random() * 60)}m`,
-            price: price,
-            class: flightClass,
-            seatsAvailable: Math.floor(Math.random() * 20) + 5
-        });
-    }
-    
-    // Generate return flights if round trip
-    let returnFlights = [];
-    if (returnDate) {
-        for (let i = 0; i < 2; i++) {
-            const hour = 8 + Math.floor(Math.random() * 10);
-            const minute = Math.floor(Math.random() * 4) * 15;
-            const time = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-            
-            returnFlights.push({
-                id: `ret-${i}`,
-                flightNumber: flightNumbers[i + 1],
-                airline: airlines[(i + 1) % airlines.length],
-                from: airportNames[to] || to,
-                to: airportNames[from] || from,
-                departureTime: time,
-                departureDate: returnDate,
-                duration: 'Similar to outbound',
-                price: departureFlights[i].price,
-                class: flightClass,
-                seatsAvailable: Math.floor(Math.random() * 15) + 3
+
+        // Currency converter
+        const currencySelect = document.getElementById('currency');
+        if (currencySelect) {
+            currencySelect.addEventListener('change', (e) => {
+                this.convertCurrency(e.target.value);
             });
         }
     }
-    
-    return {
-        departure: departureFlights,
-        return: returnFlights
-    };
-}
 
-function displayFlightResults(flights) {
-    // Show results section
-    const resultsSection = document.getElementById('flightResults');
-    resultsSection.style.display = 'block';
-    
-    // Get container
-    const container = document.getElementById('resultsContainer');
-    container.innerHTML = '';
-    
-    // Display departure flights
-    if (flights.departure.length > 0) {
-        const departureTitle = document.createElement('h3');
-        departureTitle.textContent = 'Outbound Flights';
-        departureTitle.style.marginTop = '30px';
-        departureTitle.style.marginBottom = '20px';
-        container.appendChild(departureTitle);
-        
-        flights.departure.forEach(flight => {
-            const flightElement = createFlightElement(flight);
-            container.appendChild(flightElement);
+    switchTab(tab) {
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active');
         });
+        document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+
+        // Toggle return date field
+        const returnDateGroup = document.getElementById('returnDateGroup');
+        if (returnDateGroup) {
+            returnDateGroup.style.display = tab === 'round-trip' ? 'block' : 'none';
+        }
     }
-    
-    // Display return flights if available
-    if (flights.return && flights.return.length > 0) {
-        const returnTitle = document.createElement('h3');
-        returnTitle.textContent = 'Return Flights';
-        returnTitle.style.marginTop = '40px';
-        returnTitle.style.marginBottom = '20px';
-        container.appendChild(returnTitle);
+
+    updatePassengerCount(type, action) {
+        const currentValue = this.passengers[type];
+        const maxPassengers = type === 'adults' ? 9 : 4;
+
+        if (action === 'increase' && currentValue < maxPassengers) {
+            this.passengers[type]++;
+        } else if (action === 'decrease' && currentValue > 0) {
+            this.passengers[type]--;
+        }
+
+        this.updatePassengerDisplay();
+    }
+
+    updatePassengerDisplay() {
+        const total = this.passengers.adults + this.passengers.children + this.passengers.infants;
+        document.getElementById('passengerCount').textContent = 
+            `${total} Passenger${total !== 1 ? 's' : ''}`;
         
-        flights.return.forEach(flight => {
-            const flightElement = createFlightElement(flight);
-            container.appendChild(flightElement);
-        });
+        document.getElementById('adultsCount').textContent = this.passengers.adults;
+        document.getElementById('childrenCount').textContent = this.passengers.children;
+        document.getElementById('infantsCount').textContent = this.passengers.infants;
     }
-    
-    // Show message if no flights found
-    if (flights.departure.length === 0 && (!flights.return || flights.return.length === 0)) {
-        const noFlights = document.createElement('div');
-        noFlights.className = 'no-flights';
-        noFlights.innerHTML = `
-            <i class="fas fa-plane-slash" style="font-size: 3rem; color: #ccc; margin-bottom: 20px;"></i>
-            <h3>No flights found</h3>
-            <p>We couldn't find any flights matching your criteria. Try adjusting your search.</p>
+
+    searchFlights() {
+        const from = document.getElementById('from').value;
+        const to = document.getElementById('to').value;
+        const departure = document.getElementById('departure').value;
+        const returnDate = document.getElementById('return')?.value;
+        const cabinClass = document.getElementById('class').value;
+
+        if (!from || !to || !departure) {
+            auth.showToast('Please fill in all required fields', 'error');
+            return;
+        }
+
+        if (from === to) {
+            auth.showToast('Departure and destination cannot be the same', 'error');
+            return;
+        }
+
+        // Show loading
+        document.getElementById('flightResults').style.display = 'block';
+        document.getElementById('resultsContainer').innerHTML = `
+            <div class="text-center" style="padding: 40px;">
+                <div class="spinner"></div>
+                <p style="margin-top: 20px;">Searching for flights...</p>
+            </div>
         `;
-        noFlights.style.textAlign = 'center';
-        noFlights.style.padding = '40px 20px';
-        container.appendChild(noFlights);
-    }
-}
 
-function createFlightElement(flight) {
-    const element = document.createElement('div');
-    element.className = 'result-card';
-    element.innerHTML = `
-        <div class="result-info">
-            <div class="result-route">
-                <div class="result-from">
-                    <div class="result-time">${flight.departureTime}</div>
-                    <div class="result-place">${flight.from} (${flight.from.substring(0, 3).toUpperCase()})</div>
-                </div>
-                <div class="result-duration">
-                    <i class="fas fa-plane"></i>
-                    <span>${flight.duration}</span>
-                </div>
-                <div class="result-to">
-                    <div class="result-time">${calculateArrivalTime(flight.departureTime, flight.duration)}</div>
-                    <div class="result-place">${flight.to} (${flight.to.substring(0, 3).toUpperCase()})</div>
-                </div>
-            </div>
-            <div class="result-details">
-                <span class="flight-number">${flight.flightNumber}</span> • 
-                <span class="airline">${flight.airline}</span> • 
-                <span class="flight-class">${flight.class.charAt(0).toUpperCase() + flight.class.slice(1)} Class</span> • 
-                <span class="seats">${flight.seatsAvailable} seats left</span>
-            </div>
-        </div>
-        <div class="result-price">
-            <h3>$${flight.price}</h3>
-            <p>Total for all passengers</p>
-            <button class="btn-primary select-flight" data-flight='${JSON.stringify(flight)}'>Select Flight</button>
-        </div>
-    `;
-    
-    // Add event listener to select button
-    element.querySelector('.select-flight').addEventListener('click', function() {
-        const flightData = JSON.parse(this.getAttribute('data-flight'));
-        selectFlight(flightData);
-    });
-    
-    return element;
-}
-
-function calculateArrivalTime(departureTime, duration) {
-    // Simple calculation for demo
-    const [hours, minutes] = departureTime.split(':').map(Number);
-    
-    // Extract hours from duration string
-    let durationHours = 0;
-    if (duration.includes('h')) {
-        durationHours = parseInt(duration.split('h')[0]);
-    }
-    
-    // Extract minutes from duration string
-    let durationMinutes = 0;
-    if (duration.includes('m')) {
-        const minutesPart = duration.split('h')[1] || duration;
-        durationMinutes = parseInt(minutesPart.split('m')[0]) || 0;
-    }
-    
-    // Calculate arrival time
-    let arrivalHours = hours + durationHours;
-    let arrivalMinutes = minutes + durationMinutes;
-    
-    // Handle overflow
-    if (arrivalMinutes >= 60) {
-        arrivalHours += Math.floor(arrivalMinutes / 60);
-        arrivalMinutes = arrivalMinutes % 60;
-    }
-    
-    if (arrivalHours >= 24) {
-        arrivalHours = arrivalHours % 24;
-    }
-    
-    return `${arrivalHours.toString().padStart(2, '0')}:${arrivalMinutes.toString().padStart(2, '0')}`;
-}
-
-function selectFlight(flight) {
-    // Store selected flight in localStorage
-    localStorage.setItem('rwandair_selected_flight', JSON.stringify(flight));
-    
-    // Check if user is logged in
-    const userData = localStorage.getItem('rwandair_user');
-    
-    if (userData) {
-        // If logged in, proceed to booking confirmation
-        showAlert(`Selected ${flight.flightNumber} to ${flight.to}. Proceeding to booking details...`, 'success');
-        
-        // In a real app, this would redirect to a booking confirmation page
+        // Simulate API call
         setTimeout(() => {
-            // For demo, just show a confirmation
-            const confirmed = confirm(`Confirm booking for ${flight.flightNumber} from ${flight.from} to ${flight.to} on ${flight.departureDate} at ${flight.departureTime} for $${flight.price}?`);
-            
-            if (confirmed) {
-                showAlert('Booking confirmed! Check your dashboard for details.', 'success');
-                
-                // Simulate adding to user's bookings
-                const user = JSON.parse(userData);
-                user.bookings = user.bookings || [];
-                user.bookings.push({
-                    flight: flight.flightNumber,
-                    from: flight.from,
-                    to: flight.to,
-                    date: flight.departureDate,
-                    time: flight.departureTime,
-                    price: flight.price,
-                    status: 'Confirmed'
-                });
-                
-                localStorage.setItem('rwandair_user', JSON.stringify(user));
-                
-                // Redirect to dashboard
-                setTimeout(() => {
-                    window.location.href = 'dashboard.html';
-                }, 2000);
-            }
-        }, 1000);
-    } else {
-        // If not logged in, redirect to login
-        showAlert('Please login to complete your booking', 'info');
-        
-        setTimeout(() => {
-            window.location.href = 'login.html';
+            const results = this.getFilteredFlights(from, to, departure, cabinClass);
+            this.displayFlightResults(results);
         }, 1500);
     }
+
+    getFilteredFlights(from, to, date, cabinClass) {
+        // Filter flights based on criteria
+        return this.flights.filter(flight => {
+            return flight.from === from && 
+                   flight.to === to && 
+                   flight.date === date &&
+                   flight.availableSeats[cabinClass] > 0;
+        });
+    }
+
+    displayFlightResults(flights) {
+        const container = document.getElementById('resultsContainer');
+        
+        if (flights.length === 0) {
+            container.innerHTML = `
+                <div class="text-center" style="padding: 40px;">
+                    <i class="fas fa-plane-slash" style="font-size: 3rem; color: var(--gray-text);"></i>
+                    <h3 style="margin: 20px 0;">No Flights Found</h3>
+                    <p>Try adjusting your search criteria or dates</p>
+                    <button class="btn-primary" onclick="window.location.reload()">Search Again</button>
+                </div>
+            `;
+            return;
+        }
+
+        let html = '';
+        flights.forEach(flight => {
+            const price = this.calculatePrice(flight);
+            html += `
+                <div class="flight-card" data-flight-id="${flight.id}">
+                    <div class="flight-card-header">
+                        <span class="flight-number">${flight.flightNumber}</span>
+                        <span class="flight-price">$${price}</span>
+                    </div>
+                    <div class="flight-route">
+                        <div class="flight-from">
+                            <h4>${flight.fromCity}</h4>
+                            <div class="flight-time">${flight.departureTime}</div>
+                            <div class="flight-date">${flight.date}</div>
+                        </div>
+                        <div class="flight-icon">
+                            <i class="fas fa-plane"></i>
+                        </div>
+                        <div class="flight-to">
+                            <h4>${flight.toCity}</h4>
+                            <div class="flight-time">${flight.arrivalTime}</div>
+                            <div class="flight-date">${flight.date}</div>
+                        </div>
+                    </div>
+                    <div class="flight-duration">
+                        <i class="fas fa-clock"></i> Duration: ${flight.duration}
+                    </div>
+                    <div class="flight-details">
+                        <div class="flight-detail-item">
+                            <i class="fas fa-chair"></i>
+                            <span>${flight.availableSeats.economy} seats available</span>
+                        </div>
+                        <div class="flight-detail-item">
+                            <i class="fas fa-utensils"></i>
+                            <span>Meal included</span>
+                        </div>
+                        <div class="flight-detail-item">
+                            <i class="fas fa-wifi"></i>
+                            <span>WiFi available</span>
+                        </div>
+                    </div>
+                    <div class="flight-card-footer">
+                        <button class="btn-outline" onclick="booking.showFlightDetails(${flight.id})">
+                            <i class="fas fa-info-circle"></i> Details
+                        </button>
+                        <button class="btn-primary" onclick="booking.selectFlight(${flight.id})">
+                            <i class="fas fa-check"></i> Select Flight
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+    }
+
+    selectFlight(flightId) {
+        this.selectedFlight = this.flights.find(f => f.id === flightId);
+        if (!this.selectedFlight) return;
+
+        // Store in session
+        sessionStorage.setItem('selectedFlight', JSON.stringify(this.selectedFlight));
+
+        // Show seat selection modal
+        this.showSeatSelection();
+    }
+
+    showSeatSelection() {
+        const modal = document.createElement('div');
+        modal.className = 'modal show';
+        modal.id = 'seatModal';
+        
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Select Your Seats</h2>
+                    <button class="close-modal" onclick="document.getElementById('seatModal').remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <h3>Flight ${this.selectedFlight.flightNumber}</h3>
+                    <p>${this.selectedFlight.fromCity} → ${this.selectedFlight.toCity}</p>
+                    
+                    <div class="seat-map" id="seatMap"></div>
+                    
+                    <div class="seat-legend" style="display: flex; gap: 20px; margin: 20px 0;">
+                        <div><span class="seat" style="width: 20px; height: 20px; display: inline-block;"></span> Available</div>
+                        <div><span class="seat selected" style="width: 20px; height: 20px; display: inline-block;"></span> Selected</div>
+                        <div><span class="seat occupied" style="width: 20px; height: 20px; display: inline-block;"></span> Occupied</div>
+                    </div>
+
+                    <div class="selected-seats-info">
+                        <h4>Selected Seats: <span id="selectedSeatsCount">0</span></h4>
+                        <div id="selectedSeatsList"></div>
+                    </div>
+
+                    <div class="meal-preferences" style="margin-top: 20px;">
+                        <h4>Meal Preferences</h4>
+                        <select id="mealPreference" class="form-control">
+                            <option value="regular">Regular Meal</option>
+                            <option value="vegetarian">Vegetarian</option>
+                            <option value="vegan">Vegan</option>
+                            <option value="halal">Halal</option>
+                            <option value="kids">Kids Meal</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-secondary" onclick="document.getElementById('seatModal').remove()">Cancel</button>
+                    <button class="btn-primary" onclick="booking.confirmSeats()">Confirm Seats</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+        this.generateSeatMap();
+    }
+
+    generateSeatMap() {
+        const seatMap = document.getElementById('seatMap');
+        if (!seatMap) return;
+
+        const rows = 30;
+        const seatsPerRow = 6;
+        let seats = '';
+
+        for (let row = 1; row <= rows; row++) {
+            for (let seat = 1; seat <= seatsPerRow; seat++) {
+                const seatNumber = `${row}${String.fromCharCode(64 + seat)}`;
+                const isOccupied = Math.random() > 0.7; // Simulate occupied seats
+                const isEmergency = row === 12 || row === 13;
+                const isBusiness = row <= 5;
+
+                seats += `
+                    <div class="seat ${isOccupied ? 'occupied' : ''} 
+                         ${isEmergency ? 'emergency' : ''} 
+                         ${isBusiness ? 'business' : ''}"
+                         data-seat="${seatNumber}"
+                         onclick="booking.toggleSeat(this)">
+                        ${seatNumber}
+                    </div>
+                `;
+            }
+        }
+
+        seatMap.innerHTML = seats;
+    }
+
+    toggleSeat(seatElement) {
+        if (seatElement.classList.contains('occupied')) return;
+
+        const seatNumber = seatElement.dataset.seat;
+        
+        if (seatElement.classList.contains('selected')) {
+            seatElement.classList.remove('selected');
+            this.selectedSeats = this.selectedSeats.filter(s => s !== seatNumber);
+        } else {
+            if (this.selectedSeats.length < this.passengers.adults + this.passengers.children) {
+                seatElement.classList.add('selected');
+                this.selectedSeats.push(seatNumber);
+            } else {
+                auth.showToast(`You can only select ${this.passengers.adults + this.passengers.children} seats`, 'warning');
+            }
+        }
+
+        this.updateSelectedSeats();
+    }
+
+    updateSelectedSeats() {
+        document.getElementById('selectedSeatsCount').textContent = this.selectedSeats.length;
+        document.getElementById('selectedSeatsList').innerHTML = this.selectedSeats.join(', ');
+    }
+
+    confirmSeats() {
+        if (this.selectedSeats.length !== this.passengers.adults + this.passengers.children) {
+            auth.showToast(`Please select ${this.passengers.adults + this.passengers.children} seats`, 'warning');
+            return;
+        }
+
+        this.currentBooking = {
+            flight: this.selectedFlight,
+            seats: this.selectedSeats,
+            passengers: this.passengers,
+            mealPreference: document.getElementById('mealPreference').value,
+            totalPrice: this.calculateTotalPrice()
+        };
+
+        sessionStorage.setItem('currentBooking', JSON.stringify(this.currentBooking));
+        document.getElementById('seatModal').remove();
+
+        // Show booking summary
+        this.showBookingSummary();
+    }
+
+    showBookingSummary() {
+        const modal = document.createElement('div');
+        modal.className = 'modal show';
+        modal.id = 'summaryModal';
+        
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Booking Summary</h2>
+                    <button class="close-modal" onclick="document.getElementById('summaryModal').remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="booking-summary">
+                        <h3>Flight Details</h3>
+                        <p><strong>Flight:</strong> ${this.currentBooking.flight.flightNumber}</p>
+                        <p><strong>From:</strong> ${this.currentBooking.flight.fromCity}</p>
+                        <p><strong>To:</strong> ${this.currentBooking.flight.toCity}</p>
+                        <p><strong>Date:</strong> ${this.currentBooking.flight.date}</p>
+                        <p><strong>Departure:</strong> ${this.currentBooking.flight.departureTime}</p>
+                        <p><strong>Arrival:</strong> ${this.currentBooking.flight.arrivalTime}</p>
+
+                        <h3 style="margin-top: 20px;">Passenger Details</h3>
+                        <p><strong>Adults:</strong> ${this.currentBooking.passengers.adults}</p>
+                        <p><strong>Children:</strong> ${this.currentBooking.passengers.children}</p>
+                        <p><strong>Infants:</strong> ${this.currentBooking.passengers.infants}</p>
+
+                        <h3 style="margin-top: 20px;">Seat Selection</h3>
+                        <p><strong>Seats:</strong> ${this.currentBooking.seats.join(', ')}</p>
+
+                        <h3 style="margin-top: 20px;">Meal Preference</h3>
+                        <p><strong>Meal:</strong> ${this.currentBooking.mealPreference}</p>
+
+                        <h3 style="margin-top: 20px;">Price Breakdown</h3>
+                        <p><strong>Base Fare:</strong> $${this.currentBooking.flight.basePrice * this.currentBooking.passengers.adults}</p>
+                        <p><strong>Children Fare:</strong> $${(this.currentBooking.flight.basePrice * 0.75) * this.currentBooking.passengers.children}</p>
+                        <p><strong>Taxes & Fees:</strong> $${this.calculateTaxes()}</p>
+                        <hr>
+                        <p><strong>Total:</strong> $${this.currentBooking.totalPrice}</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-secondary" onclick="document.getElementById('summaryModal').remove()">Edit</button>
+                    <button class="btn-primary" onclick="booking.completeBooking()">Complete Booking</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+    }
+
+    completeBooking() {
+        // Save booking to user account
+        if (auth.currentUser) {
+            const booking = {
+                id: Date.now(),
+                ...this.currentBooking,
+                bookingDate: new Date().toISOString(),
+                status: 'confirmed',
+                bookingReference: this.generateBookingReference()
+            };
+
+            auth.currentUser.bookings.push(booking);
+            localStorage.setItem('users', JSON.stringify(auth.users));
+            localStorage.setItem('currentUser', JSON.stringify(auth.currentUser));
+
+            document.getElementById('summaryModal').remove();
+            auth.showToast(`Booking confirmed! Reference: ${booking.bookingReference}`, 'success');
+
+            setTimeout(() => {
+                window.location.href = 'dashboard.html';
+            }, 2000);
+        } else {
+            auth.showToast('Please login to complete booking', 'warning');
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 1500);
+        }
+    }
+
+    generateBookingReference() {
+        return 'WB' + Math.random().toString(36).substr(2, 6).toUpperCase();
+    }
+
+    calculatePrice(flight) {
+        const basePrice = flight.basePrice || 300;
+        const cabinMultiplier = {
+            economy: 1,
+            premium: 1.5,
+            business: 2.5,
+            first: 4
+        };
+        const multiplier = cabinMultiplier[document.getElementById('class')?.value || 'economy'];
+        return Math.round(basePrice * multiplier);
+    }
+
+    calculateTotalPrice() {
+        const basePrice = this.selectedFlight.basePrice;
+        const adultTotal = basePrice * this.passengers.adults;
+        const childTotal = (basePrice * 0.75) * this.passengers.children;
+        const infantTotal = basePrice * 0.1 * this.passengers.infants;
+        const taxes = this.calculateTaxes();
+        
+        return adultTotal + childTotal + infantTotal + taxes;
+    }
+
+    calculateTaxes() {
+        const subtotal = this.selectedFlight.basePrice * 
+            (this.passengers.adults + this.passengers.children * 0.75 + this.passengers.infants * 0.1);
+        return Math.round(subtotal * 0.15); // 15% taxes
+    }
+
+    showFlightDetails(flightId) {
+        const flight = this.flights.find(f => f.id === flightId);
+        if (!flight) return;
+
+        const modal = document.createElement('div');
+        modal.className = 'modal show';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Flight Details</h2>
+                    <button class="close-modal" onclick="this.closest('.modal').remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <h3>${flight.flightNumber}</h3>
+                    <p><strong>Aircraft:</strong> ${flight.aircraft || 'Boeing 737-800'}</p>
+                    <p><strong>Duration:</strong> ${flight.duration}</p>
+                    <p><strong>Baggage Allowance:</strong> 23kg checked, 7kg carry-on</p>
+                    <p><strong>In-flight Entertainment:</strong> Yes</p>
+                    <p><strong>Power Outlets:</strong> Yes</p>
+                    <p><strong>WiFi:</strong> Available for purchase</p>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+    }
+
+    loadFlights() {
+        // Sample flight data
+        return [
+            {
+                id: 1,
+                flightNumber: 'WB101',
+                from: 'KGL',
+                fromCity: 'Kigali',
+                to: 'NBO',
+                toCity: 'Nairobi',
+                date: '2024-03-20',
+                departureTime: '08:30',
+                arrivalTime: '10:15',
+                duration: '1h 45m',
+                basePrice: 350,
+                aircraft: 'Boeing 737-800',
+                availableSeats: {
+                    economy: 45,
+                    premium: 12,
+                    business: 8,
+                    first: 4
+                }
+            },
+            {
+                id: 2,
+                flightNumber: 'WB202',
+                from: 'KGL',
+                fromCity: 'Kigali',
+                to: 'JNB',
+                toCity: 'Johannesburg',
+                date: '2024-03-20',
+                departureTime: '12:45',
+                arrivalTime: '16:30',
+                duration: '3h 45m',
+                basePrice: 450,
+                aircraft: 'Airbus A330',
+                availableSeats: {
+                    economy: 32,
+                    premium: 8,
+                    business: 6,
+                    first: 2
+                }
+            },
+            {
+                id: 3,
+                flightNumber: 'WB303',
+                from: 'KGL',
+                fromCity: 'Kigali',
+                to: 'DXB',
+                toCity: 'Dubai',
+                date: '2024-03-20',
+                departureTime: '22:15',
+                arrivalTime: '06:30',
+                duration: '6h 15m',
+                basePrice: 650,
+                aircraft: 'Boeing 787 Dreamliner',
+                availableSeats: {
+                    economy: 78,
+                    premium: 24,
+                    business: 16,
+                    first: 8
+                }
+            },
+            {
+                id: 4,
+                flightNumber: 'WB404',
+                from: 'KGL',
+                fromCity: 'Kigali',
+                to: 'CDG',
+                toCity: 'Paris',
+                date: '2024-03-20',
+                departureTime: '20:00',
+                arrivalTime: '08:30',
+                duration: '8h 30m',
+                basePrice: 890,
+                aircraft: 'Airbus A350',
+                availableSeats: {
+                    economy: 56,
+                    premium: 18,
+                    business: 12,
+                    first: 6
+                }
+            }
+        ];
+    }
+
+    loadFromStorage() {
+        const saved = sessionStorage.getItem('currentBooking');
+        if (saved) {
+            this.currentBooking = JSON.parse(saved);
+        }
+    }
+
+    toggleReturnDate(tripType) {
+        const returnDateGroup = document.getElementById('returnDateGroup');
+        if (returnDateGroup) {
+            returnDateGroup.style.display = tripType === 'roundtrip' ? 'block' : 'none';
+        }
+    }
+
+    convertCurrency(currency) {
+        // Simulate currency conversion
+        const rates = {
+            USD: 1,
+            EUR: 0.92,
+            GBP: 0.79,
+            RWF: 1300,
+            KES: 130
+        };
+
+        const rate = rates[currency] || 1;
+        document.querySelectorAll('.flight-price').forEach(el => {
+            const price = parseFloat(el.textContent.replace('$', ''));
+            el.textContent = `${currency} ${Math.round(price * rate)}`;
+        });
+    }
 }
 
-// Reuse showAlert function from auth.js
-function showAlert(message, type) {
-    // Check if alert function already exists from auth.js
-    if (typeof window.showAlert === 'function') {
-        window.showAlert(message, type);
-        return;
-    }
-    
-    // Create alert element
-    const alert = document.createElement('div');
-    alert.className = `alert alert-${type}`;
-    alert.textContent = message;
-    
-    // Style the alert
-    alert.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 15px 20px;
-        border-radius: 8px;
-        color: white;
-        font-weight: 500;
-        z-index: 9999;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        animation: slideIn 0.3s ease;
-    `;
-    
-    // Set background color based on type
-    if (type === 'success') {
-        alert.style.backgroundColor = '#28a745';
-    } else if (type === 'error') {
-        alert.style.backgroundColor = '#dc3545';
-    } else if (type === 'info') {
-        alert.style.backgroundColor = '#17a2b8';
-    }
-    
-    // Add to page
-    document.body.appendChild(alert);
-    
-    // Remove after 3 seconds
-    setTimeout(() => {
-        alert.style.animation = 'slideOut 0.3s ease';
-        setTimeout(() => {
-            if (alert.parentNode) {
-                alert.parentNode.removeChild(alert);
-            }
-        }, 300);
-    }, 3000);
-}
+// Initialize booking system
+const booking = new BookingSystem();
