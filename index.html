@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rwanda Air | Home - Experience the Heart of Africa</title>
+    <title>Rwanda Air | Experience the Heart of Africa</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,12 +13,24 @@
         /* Additional styles for new features */
         :root {
             --primary-color: #e63946;
+            --primary-dark: #d62828;
             --secondary-color: #1e3557;
+            --secondary-dark: #152b4a;
             --accent-color: #f4a261;
             --light-bg: #f8f9fa;
             --dark-text: #2d3436;
+            --light-text: #ffffff;
+            --gray-text: #666666;
+            --border-color: #e0e0e0;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --info-color: #3498db;
+            
             --border-radius: 12px;
+            --border-radius-sm: 8px;
             --box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            --box-shadow-hover: 0 15px 40px rgba(0, 0, 0, 0.15);
             --transition: all 0.3s ease;
         }
 
@@ -107,6 +119,80 @@
             background: var(--primary-color);
         }
 
+        .dark-mode-toggle {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: var(--dark-text);
+            padding: 8px;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+
+        .dark-mode-toggle:hover {
+            background: var(--light-bg);
+            transform: rotate(15deg);
+        }
+
+        .user-menu {
+            position: relative;
+            display: inline-block;
+        }
+
+        .user-menu-btn {
+            background: none;
+            border: none;
+            font-size: 1rem;
+            cursor: pointer;
+            color: var(--dark-text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 15px;
+            border-radius: 50px;
+            transition: var(--transition);
+        }
+
+        .user-menu-btn:hover {
+            background: var(--light-bg);
+        }
+
+        .user-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border-radius: var(--border-radius-sm);
+            box-shadow: var(--box-shadow);
+            min-width: 200px;
+            display: none;
+            z-index: 1000;
+            margin-top: 10px;
+        }
+
+        .user-dropdown.show {
+            display: block;
+        }
+
+        .user-dropdown a {
+            display: block;
+            padding: 12px 20px;
+            text-decoration: none;
+            color: var(--dark-text);
+            transition: var(--transition);
+        }
+
+        .user-dropdown a:hover {
+            background: var(--light-bg);
+            color: var(--primary-color);
+        }
+
+        .user-dropdown a i {
+            margin-right: 10px;
+            width: 20px;
+        }
+
         .login-btn {
             background: var(--primary-color);
             color: white !important;
@@ -116,7 +202,7 @@
         }
 
         .login-btn:hover {
-            background: #d62828;
+            background: var(--primary-dark);
             transform: translateY(-2px);
             color: white !important;
         }
@@ -202,6 +288,7 @@
 
         .form-group {
             text-align: left;
+            position: relative;
         }
 
         .form-group label {
@@ -220,6 +307,7 @@
             border-radius: 8px;
             font-size: 1rem;
             transition: var(--transition);
+            font-family: inherit;
         }
 
         .form-group input:focus,
@@ -227,6 +315,23 @@
             outline: none;
             border-color: var(--primary-color);
             box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.1);
+        }
+
+        .input-with-icon {
+            position: relative;
+        }
+
+        .input-with-icon i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+        }
+
+        .input-with-icon input,
+        .input-with-icon select {
+            padding-left: 45px;
         }
 
         .search-btn {
@@ -244,7 +349,7 @@
         }
 
         .search-btn:hover {
-            background: #d62828;
+            background: var(--primary-dark);
             transform: translateY(-2px);
         }
 
@@ -255,31 +360,38 @@
             margin-top: 40px;
         }
 
-        .btn-primary,
-        .btn-secondary {
-            padding: 15px 40px;
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: var(--transition);
-            display: inline-block;
-        }
-
         .btn-primary {
             background: var(--primary-color);
             color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: var(--border-radius-sm);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            display: inline-block;
         }
 
         .btn-primary:hover {
-            background: #d62828;
+            background: var(--primary-dark);
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(230, 57, 70, 0.3);
+            box-shadow: var(--box-shadow);
         }
 
         .btn-secondary {
             background: transparent;
             color: white;
             border: 2px solid white;
+            padding: 10px 25px;
+            border-radius: var(--border-radius-sm);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            display: inline-block;
         }
 
         .btn-secondary:hover {
@@ -567,7 +679,7 @@
         }
 
         .newsletter-form button:hover {
-            background: #d62828;
+            background: var(--primary-dark);
             transform: translateY(-2px);
         }
 
@@ -655,6 +767,68 @@
             color: #ccc;
         }
 
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 3000;
+        }
+
+        .toast {
+            background: white;
+            border-radius: var(--border-radius-sm);
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            box-shadow: var(--box-shadow);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            animation: slideInRight 0.3s ease;
+            max-width: 350px;
+        }
+
+        .toast.success {
+            border-left: 4px solid var(--success-color);
+        }
+
+        .toast.error {
+            border-left: 4px solid var(--danger-color);
+        }
+
+        .toast.warning {
+            border-left: 4px solid var(--warning-color);
+        }
+
+        .toast.info {
+            border-left: 4px solid var(--info-color);
+        }
+
+        .toast-icon {
+            font-size: 1.2rem;
+        }
+
+        .toast.success .toast-icon {
+            color: var(--success-color);
+        }
+
+        .toast.error .toast-icon {
+            color: var(--danger-color);
+        }
+
+        .toast-message {
+            flex: 1;
+            color: var(--dark-text);
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: #999;
+        }
+
         /* Animations */
         @keyframes fadeInUp {
             from {
@@ -664,6 +838,17 @@
             to {
                 opacity: 1;
                 transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
             }
         }
 
@@ -780,11 +965,11 @@
             </a>
             <ul class="nav-links">
                 <li><a href="index.html" class="active">Home</a></li>
-                <li><a href="#about">About</a></li>
-                <li><a href="#destinations">Destinations</a></li>
-                <li><a href="#offers">Offers</a></li>
-                <li><a href="#services">Services</a></li>
-                <li><a href="login.html" class="login-btn">Login</a></li>
+                <li><a href="booking.html">Book Flight</a></li>
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="#" class="dark-mode-toggle" id="darkModeToggle"><i class="fas fa-moon"></i></a></li>
+                <li><a href="login.html" class="login-btn" id="loginBtn">Login</a></li>
+                <li class="user-menu" id="userMenu" style="display: none;"></li>
             </ul>
             <div class="menu-toggle">
                 <i class="fas fa-bars"></i>
@@ -807,49 +992,81 @@
                         <button class="search-tab" onclick="showSearch('multi')">Multi-City</button>
                     </div>
                     
-                    <form id="flightSearchForm" class="search-form">
-                        <div class="form-group">
-                            <label>From</label>
-                            <input type="text" placeholder="City or Airport" value="Kigali (KGL)">
+                    <form id="flightSearchForm" class="search-form" onsubmit="event.preventDefault(); window.location.href='booking.html'">
+                        <div class="form-group input-with-icon">
+                            <i class="fas fa-plane-departure"></i>
+                            <label for="from">From</label>
+                            <select id="from" required>
+                                <option value="">Select city</option>
+                                <option value="KGL" selected>Kigali (KGL)</option>
+                                <option value="NBO">Nairobi (NBO)</option>
+                                <option value="JNB">Johannesburg (JNB)</option>
+                                <option value="ADD">Addis Ababa (ADD)</option>
+                                <option value="DXB">Dubai (DXB)</option>
+                                <option value="CDG">Paris (CDG)</option>
+                                <option value="LHR">London (LHR)</option>
+                                <option value="JFK">New York (JFK)</option>
+                            </select>
                         </div>
-                        <div class="form-group">
-                            <label>To</label>
-                            <input type="text" placeholder="City or Airport" value="Nairobi (NBO)">
+                        
+                        <div class="form-group input-with-icon">
+                            <i class="fas fa-plane-arrival"></i>
+                            <label for="to">To</label>
+                            <select id="to" required>
+                                <option value="">Select city</option>
+                                <option value="KGL">Kigali (KGL)</option>
+                                <option value="NBO" selected>Nairobi (NBO)</option>
+                                <option value="JNB">Johannesburg (JNB)</option>
+                                <option value="ADD">Addis Ababa (ADD)</option>
+                                <option value="DXB">Dubai (DXB)</option>
+                                <option value="CDG">Paris (CDG)</option>
+                                <option value="LHR">London (LHR)</option>
+                                <option value="JFK">New York (JFK)</option>
+                            </select>
                         </div>
-                        <div class="form-group">
-                            <label>Depart</label>
-                            <input type="date" value="2024-03-20">
+                        
+                        <div class="form-group input-with-icon">
+                            <i class="fas fa-calendar-alt"></i>
+                            <label for="depart">Depart</label>
+                            <input type="date" id="depart" value="2024-03-20" required>
                         </div>
-                        <div class="form-group">
-                            <label>Return</label>
-                            <input type="date" value="2024-03-27">
+                        
+                        <div class="form-group input-with-icon" id="returnGroup">
+                            <i class="fas fa-calendar-alt"></i>
+                            <label for="return">Return</label>
+                            <input type="date" id="return" value="2024-03-27">
                         </div>
+                        
                         <div class="form-group">
-                            <label>Passengers</label>
-                            <select>
+                            <label for="passengers">Passengers</label>
+                            <select id="passengers">
                                 <option>1 Adult</option>
-                                <option>2 Adults</option>
+                                <option selected>2 Adults</option>
                                 <option>3 Adults</option>
                                 <option>4 Adults</option>
                                 <option>Family (2+2)</option>
                             </select>
                         </div>
+                        
                         <div class="form-group">
-                            <label>Cabin Class</label>
-                            <select>
+                            <label for="cabin">Cabin Class</label>
+                            <select id="cabin">
                                 <option>Economy</option>
                                 <option>Premium Economy</option>
                                 <option>Business</option>
                                 <option>First Class</option>
                             </select>
                         </div>
-                        <button type="submit" class="search-btn">Search Flights <i class="fas fa-search"></i></button>
+                        
+                        <button type="submit" class="search-btn">
+                            <i class="fas fa-search"></i> Search Flights
+                        </button>
                     </form>
                 </div>
 
                 <div class="hero-btns">
                     <a href="booking.html" class="btn-primary">Book a Flight</a>
-                    <a href="login.html" class="btn-secondary">My Account</a>
+                    <a href="#destinations" class="btn-secondary">Explore Destinations</a>
                 </div>
             </div>
         </div>
@@ -928,7 +1145,7 @@
                         <h3>Kigali to Johannesburg</h3>
                         <p>Round trip from</p>
                         <div class="offer-price">$450 <small>was $560</small></div>
-                        <a href="#" class="offer-btn">Book Now</a>
+                        <a href="booking.html" class="offer-btn">Book Now</a>
                     </div>
                 </div>
                 <div class="offer-card">
@@ -938,7 +1155,7 @@
                         <h3>Kigali to London</h3>
                         <p>Round trip from</p>
                         <div class="offer-price">$890 <small>was $1,050</small></div>
-                        <a href="#" class="offer-btn">Book Now</a>
+                        <a href="booking.html" class="offer-btn">Book Now</a>
                     </div>
                 </div>
                 <div class="offer-card">
@@ -948,7 +1165,7 @@
                         <h3>Kigali to Dubai</h3>
                         <p>Round trip from</p>
                         <div class="offer-price">$650 <small>was $870</small></div>
-                        <a href="#" class="offer-btn">Book Now</a>
+                        <a href="booking.html" class="offer-btn">Book Now</a>
                     </div>
                 </div>
             </div>
@@ -989,7 +1206,7 @@
         <div class="container">
             <h2>Subscribe to Our Newsletter</h2>
             <p>Get exclusive offers, travel tips, and updates delivered to your inbox</p>
-            <form class="newsletter-form">
+            <form class="newsletter-form" onsubmit="event.preventDefault(); alert('Thank you for subscribing!'); this.reset();">
                 <input type="email" placeholder="Enter your email address" required>
                 <button type="submit">Subscribe</button>
             </form>
@@ -1009,7 +1226,7 @@
                         <li><a href="index.html">Home</a></li>
                         <li><a href="#about">About Us</a></li>
                         <li><a href="booking.html">Book Flight</a></li>
-                        <li><a href="login.html">Login</a></li>
+                        <li><a href="dashboard.html">Dashboard</a></li>
                         <li><a href="#offers">Special Offers</a></li>
                     </ul>
                 </div>
@@ -1022,10 +1239,13 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2024 Rwanda Air. All rights reserved. | Terms & Conditions | Privacy Policy</p>
+                <p>&copy; 2024 Rwanda Air. All rights reserved. | <a href="#" style="color: #ccc;">Terms & Conditions</a> | <a href="#" style="color: #ccc;">Privacy Policy</a></p>
             </div>
         </div>
     </footer>
+
+    <!-- Toast Container for Notifications -->
+    <div class="toast-container"></div>
 
     <script src="js/auth.js"></script>
     <script>
@@ -1034,17 +1254,42 @@
             document.querySelector('.nav-links').classList.toggle('active');
         });
 
+        // Dark mode toggle
+        document.getElementById('darkModeToggle').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.body.classList.toggle('dark-mode');
+            const icon = this.querySelector('i');
+            if (document.body.classList.contains('dark-mode')) {
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+                localStorage.setItem('darkMode', 'enabled');
+            } else {
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+                localStorage.setItem('darkMode', 'disabled');
+            }
+        });
+
+        // Check for saved dark mode preference
+        if (localStorage.getItem('darkMode') === 'enabled') {
+            document.body.classList.add('dark-mode');
+            document.querySelector('#darkModeToggle i').classList.remove('fa-moon');
+            document.querySelector('#darkModeToggle i').classList.add('fa-sun');
+        }
+
         // Search tabs functionality
         function showSearch(type) {
-            // Update active tab
             document.querySelectorAll('.search-tab').forEach(tab => {
                 tab.classList.remove('active');
             });
             event.target.classList.add('active');
             
-            // Here you would typically update the form based on search type
-            // For demo purposes, we'll just log
-            console.log('Search type changed to:', type);
+            const returnGroup = document.getElementById('returnGroup');
+            if (type === 'roundtrip') {
+                returnGroup.style.display = 'block';
+            } else {
+                returnGroup.style.display = 'none';
+            }
         }
 
         // Navbar scroll effect
@@ -1071,19 +1316,6 @@
                     });
                 }
             });
-        });
-
-        // Form submission
-        document.getElementById('flightSearchForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            alert('Searching for flights... This would redirect to search results page.');
-        });
-
-        // Newsletter form submission
-        document.querySelector('.newsletter-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            alert('Thank you for subscribing to our newsletter!');
-            this.reset();
         });
 
         // Add animation on scroll
