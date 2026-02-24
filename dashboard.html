@@ -3,12 +3,1063 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rwanda Air | Dashboard</title>
+    <title>Rwanda Air | My Dashboard</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Dashboard Specific Styles */
+        :root {
+            --primary-color: #e63946;
+            --primary-dark: #d62828;
+            --secondary-color: #1e3557;
+            --secondary-dark: #152b4a;
+            --accent-color: #f4a261;
+            --light-bg: #f8f9fa;
+            --dark-text: #2d3436;
+            --light-text: #ffffff;
+            --gray-text: #666666;
+            --border-color: #e0e0e0;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --info-color: #3498db;
+            
+            --border-radius: 12px;
+            --border-radius-sm: 8px;
+            --box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            --box-shadow-hover: 0 15px 40px rgba(0, 0, 0, 0.15);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.6;
+            color: var(--dark-text);
+            overflow-x: hidden;
+            background: var(--light-bg);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Navigation */
+        .navbar {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            transition: var(--transition);
+        }
+
+        .navbar .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 80px;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--secondary-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo i {
+            color: var(--primary-color);
+            font-size: 2rem;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--dark-text);
+            font-weight: 500;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-color);
+        }
+
+        .nav-links a.active {
+            color: var(--primary-color);
+        }
+
+        .nav-links a.active::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--primary-color);
+        }
+
+        .dark-mode-toggle {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: var(--dark-text);
+            padding: 8px;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+
+        .dark-mode-toggle:hover {
+            background: var(--light-bg);
+            transform: rotate(15deg);
+        }
+
+        .user-menu {
+            position: relative;
+            display: inline-block;
+        }
+
+        .user-menu-btn {
+            background: none;
+            border: none;
+            font-size: 1rem;
+            cursor: pointer;
+            color: var(--dark-text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 15px;
+            border-radius: 50px;
+            transition: var(--transition);
+        }
+
+        .user-menu-btn:hover {
+            background: var(--light-bg);
+        }
+
+        .user-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border-radius: var(--border-radius-sm);
+            box-shadow: var(--box-shadow);
+            min-width: 200px;
+            display: none;
+            z-index: 1000;
+            margin-top: 10px;
+        }
+
+        .user-dropdown.show {
+            display: block;
+        }
+
+        .user-dropdown a {
+            display: block;
+            padding: 12px 20px;
+            text-decoration: none;
+            color: var(--dark-text);
+            transition: var(--transition);
+        }
+
+        .user-dropdown a:hover {
+            background: var(--light-bg);
+            color: var(--primary-color);
+        }
+
+        .user-dropdown a i {
+            margin-right: 10px;
+            width: 20px;
+        }
+
+        .login-btn {
+            background: var(--primary-color);
+            color: white !important;
+            padding: 10px 25px;
+            border-radius: 50px;
+            transition: var(--transition);
+        }
+
+        .login-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            color: white !important;
+        }
+
+        .menu-toggle {
+            display: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* Dashboard Header */
+        .dashboard-header {
+            background: linear-gradient(135deg, var(--secondary-color), #2a4a7a);
+            color: white;
+            padding: 120px 0 60px;
+            margin-top: 80px;
+        }
+
+        .dashboard-welcome {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .dashboard-welcome h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .dashboard-welcome p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stat-info h3 {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        .stat-info p {
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+        .dashboard-content {
+            padding: 40px 0;
+        }
+
+        .dashboard-section {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 30px;
+            margin: 30px 0;
+            box-shadow: var(--box-shadow);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            color: var(--secondary-color);
+            position: relative;
+            padding-bottom: 10px;
+            margin: 0;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background: var(--primary-color);
+            border-radius: 2px;
+        }
+
+        .section-filters {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .section-filters select,
+        .section-filters input {
+            padding: 8px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-sm);
+            font-size: 0.9rem;
+            font-family: inherit;
+        }
+
+        .section-filters input {
+            min-width: 200px;
+        }
+
+        .section-filters input:focus,
+        .section-filters select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        /* Flight Cards */
+        .flight-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .flight-card {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .flight-card:hover {
+            box-shadow: var(--box-shadow-hover);
+            transform: translateY(-2px);
+        }
+
+        .flight-card-header {
+            background: var(--light-bg);
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .flight-card-header h3 {
+            font-size: 1.1rem;
+            color: var(--secondary-color);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .status-badge.confirmed {
+            background: rgba(39, 174, 96, 0.1);
+            color: var(--success-color);
+        }
+
+        .status-badge.pending {
+            background: rgba(243, 156, 18, 0.1);
+            color: var(--warning-color);
+        }
+
+        .status-badge.cancelled {
+            background: rgba(231, 76, 60, 0.1);
+            color: var(--danger-color);
+        }
+
+        .status-badge.completed {
+            background: rgba(52, 152, 219, 0.1);
+            color: var(--info-color);
+        }
+
+        .status-badge.checked-in {
+            background: rgba(155, 89, 182, 0.1);
+            color: #9b59b6;
+        }
+
+        .flight-card-body {
+            padding: 20px;
+        }
+
+        .flight-route {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .flight-from,
+        .flight-to {
+            text-align: center;
+            flex: 1;
+        }
+
+        .flight-from h4,
+        .flight-to h4 {
+            font-size: 1rem;
+            margin-bottom: 5px;
+        }
+
+        .flight-from p,
+        .flight-to p {
+            color: var(--gray-text);
+            font-size: 0.85rem;
+        }
+
+        .flight-icon {
+            color: var(--primary-color);
+        }
+
+        .flight-info {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed var(--border-color);
+        }
+
+        .flight-info p {
+            margin: 5px 0;
+            font-size: 0.9rem;
+            color: var(--gray-text);
+        }
+
+        .flight-info i {
+            width: 20px;
+            color: var(--primary-color);
+            margin-right: 5px;
+        }
+
+        .flight-card-footer {
+            padding: 15px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--dark-text);
+            border: 1px solid var(--border-color);
+            padding: 8px 15px;
+            border-radius: var(--border-radius-sm);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: var(--transition);
+            flex: 1;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-outline:hover {
+            background: var(--light-bg);
+            border-color: var(--primary-color);
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: var(--border-radius-sm);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: var(--transition);
+            flex: 1;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 0.85rem;
+        }
+
+        /* Action Grid */
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        .action-card {
+            background: var(--light-bg);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            text-align: center;
+            text-decoration: none;
+            color: var(--dark-text);
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .action-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--box-shadow);
+        }
+
+        .action-icon {
+            width: 60px;
+            height: 60px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin: 0 auto 15px;
+        }
+
+        .action-card h3 {
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .action-card p {
+            color: var(--gray-text);
+            font-size: 0.9rem;
+        }
+
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .flight-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .flight-table th {
+            background: var(--light-bg);
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--secondary-color);
+        }
+
+        .flight-table td {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .flight-table tr:hover {
+            background: var(--light-bg);
+        }
+
+        .text-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .text-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--gray-text);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: var(--border-color);
+        }
+
+        .empty-state h3 {
+            margin-bottom: 10px;
+            color: var(--dark-text);
+        }
+
+        .empty-state p {
+            margin-bottom: 20px;
+        }
+
+        /* Miles Activity */
+        .miles-activity {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .activity-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-date {
+            color: var(--gray-text);
+            font-size: 0.85rem;
+            min-width: 100px;
+        }
+
+        .activity-desc {
+            flex: 1;
+            padding: 0 15px;
+        }
+
+        .activity-miles {
+            color: var(--success-color);
+            font-weight: 600;
+        }
+
+        /* Special Offers */
+        .offers-grid-small {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .offer-card-small {
+            background: var(--light-bg);
+            padding: 15px;
+            border-radius: var(--border-radius-sm);
+            text-align: center;
+        }
+
+        .offer-card-small h4 {
+            color: var(--secondary-color);
+            margin-bottom: 5px;
+        }
+
+        .offer-card-small p {
+            font-size: 0.9rem;
+            color: var(--gray-text);
+            margin-bottom: 10px;
+        }
+
+        .offer-code {
+            background: var(--primary-color);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            display: inline-block;
+            margin: 5px 0;
+            letter-spacing: 1px;
+        }
+
+        /* Weather Widget */
+        .weather-widget {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+        }
+
+        .weather-widget h3 {
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .weather-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .weather-item:last-child {
+            border-bottom: none;
+        }
+
+        .weather-item i {
+            width: 30px;
+            font-size: 1.2rem;
+        }
+
+        /* Notifications */
+        .notifications-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .notification-item {
+            display: flex;
+            gap: 15px;
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+            align-items: flex-start;
+        }
+
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+
+        .notification-item i {
+            font-size: 1.2rem;
+        }
+
+        .notification-item.info i {
+            color: var(--info-color);
+        }
+
+        .notification-item.success i {
+            color: var(--success-color);
+        }
+
+        .notification-item.warning i {
+            color: var(--warning-color);
+        }
+
+        .notification-content {
+            flex: 1;
+        }
+
+        .notification-content p {
+            margin-bottom: 5px;
+        }
+
+        .notification-content small {
+            color: var(--gray-text);
+        }
+
+        /* Two Column Layout */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: var(--border-radius);
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 10;
+        }
+
+        .modal-header h2 {
+            font-size: 1.5rem;
+            color: var(--secondary-color);
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gray-text);
+            transition: var(--transition);
+        }
+
+        .close-modal:hover {
+            color: var(--primary-color);
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            position: sticky;
+            bottom: 0;
+            background: white;
+        }
+
+        /* Profile Form */
+        .profile-form .form-group {
+            margin-bottom: 20px;
+        }
+
+        .profile-form label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .profile-form input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-sm);
+            font-size: 1rem;
+        }
+
+        .profile-form input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        /* Payment Methods */
+        .payment-method {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-sm);
+            margin-bottom: 10px;
+        }
+
+        .payment-method i {
+            font-size: 2rem;
+            color: var(--primary-color);
+        }
+
+        .payment-method .method-info {
+            flex: 1;
+        }
+
+        .payment-method .method-info h4 {
+            margin-bottom: 5px;
+        }
+
+        .payment-method .method-info p {
+            color: var(--gray-text);
+            font-size: 0.9rem;
+        }
+
+        .payment-method .default-badge {
+            background: var(--success-color);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+        }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 3000;
+        }
+
+        .toast {
+            background: white;
+            border-radius: var(--border-radius-sm);
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            box-shadow: var(--box-shadow);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            animation: slideInRight 0.3s ease;
+            max-width: 350px;
+        }
+
+        .toast.success {
+            border-left: 4px solid var(--success-color);
+        }
+
+        .toast.error {
+            border-left: 4px solid var(--danger-color);
+        }
+
+        .toast.warning {
+            border-left: 4px solid var(--warning-color);
+        }
+
+        .toast.info {
+            border-left: 4px solid var(--info-color);
+        }
+
+        .toast-icon {
+            font-size: 1.2rem;
+        }
+
+        .toast.success .toast-icon {
+            color: var(--success-color);
+        }
+
+        .toast.error .toast-icon {
+            color: var(--danger-color);
+        }
+
+        .toast-message {
+            flex: 1;
+            color: var(--dark-text);
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: #999;
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .dashboard-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .navbar .container {
+                height: 60px;
+            }
+            
+            .menu-toggle {
+                display: block;
+            }
+            
+            .nav-links {
+                position: fixed;
+                top: 60px;
+                left: -100%;
+                width: 100%;
+                height: calc(100vh - 60px);
+                background: white;
+                flex-direction: column;
+                padding: 40px;
+                transition: var(--transition);
+                z-index: 999;
+            }
+            
+            .nav-links.active {
+                left: 0;
+            }
+            
+            .dashboard-welcome h1 {
+                font-size: 2rem;
+            }
+            
+            .action-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .section-filters {
+                width: 100%;
+            }
+            
+            .section-filters input {
+                width: 100%;
+            }
+            
+            .flight-card-footer {
+                flex-direction: column;
+            }
+        }
+    </style>
 </head>
 <body>
     <!-- Navigation -->
@@ -21,7 +1072,9 @@
                 <li><a href="index.html">Home</a></li>
                 <li><a href="booking.html">Book Flight</a></li>
                 <li><a href="dashboard.html" class="active">Dashboard</a></li>
-                <li><a href="#" id="logoutBtn">Logout</a></li>
+                <li><a href="#" class="dark-mode-toggle" id="darkModeToggle"><i class="fas fa-moon"></i></a></li>
+                <li><a href="#" id="logoutBtn" class="login-btn">Logout</a></li>
+                <li class="user-menu" id="userMenu" style="display: none;"></li>
             </ul>
             <div class="menu-toggle">
                 <i class="fas fa-bars"></i>
@@ -33,8 +1086,8 @@
     <header class="dashboard-header">
         <div class="container">
             <div class="dashboard-welcome">
-                <h1>Welcome, <span id="userName">Alex</span></h1>
-                <p>Manage your bookings, view your flights, and update your profile</p>
+                <h1>Welcome back, <span id="userName">Alex</span>!</h1>
+                <p>Manage your bookings, view your flights, and track your miles</p>
             </div>
             <div class="dashboard-stats">
                 <div class="stat-card">
@@ -57,7 +1110,7 @@
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon">
-                        <i class="fas fa-calendar-alt"></i>
+                        <i class="fas fa-crown"></i>
                     </div>
                     <div class="stat-info">
                         <h3 id="tierStatus">Silver</h3>
@@ -68,16 +1121,28 @@
         </div>
     </header>
 
-    <div class="container">
-        <div class="dashboard-content">
-            <!-- Upcoming Flights -->
-            <section class="dashboard-section">
+    <div class="container dashboard-content">
+        <!-- Upcoming Flights -->
+        <section class="dashboard-section">
+            <div class="section-header">
                 <h2 class="section-title">Upcoming Flights</h2>
-                <div class="flight-cards" id="upcomingFlights">
-                    <!-- Flight cards will be generated by JavaScript -->
+                <div class="section-filters">
+                    <select id="filterBookings" onchange="dashboard.filterBookings(this.value)">
+                        <option value="all">All Flights</option>
+                        <option value="confirmed">Confirmed</option>
+                        <option value="pending">Pending</option>
+                        <option value="checked-in">Checked In</option>
+                    </select>
+                    <input type="text" id="searchBookings" placeholder="Search flights..." oninput="dashboard.searchBookings(this.value)">
                 </div>
-            </section>
+            </div>
+            <div class="flight-cards" id="upcomingFlights">
+                <!-- Flight cards will be generated by JavaScript -->
+            </div>
+        </section>
 
+        <!-- Dashboard Grid -->
+        <div class="dashboard-grid">
             <!-- Quick Actions -->
             <section class="dashboard-section">
                 <h2 class="section-title">Quick Actions</h2>
@@ -89,21 +1154,21 @@
                         <h3>Book a Flight</h3>
                         <p>Find and book your next journey</p>
                     </a>
-                    <a href="#" class="action-card">
+                    <a href="#" class="action-card" onclick="dashboard.showProfile()">
                         <div class="action-icon">
                             <i class="fas fa-user"></i>
                         </div>
                         <h3>My Profile</h3>
                         <p>Update personal information</p>
                     </a>
-                    <a href="#" class="action-card">
+                    <a href="#" class="action-card" onclick="dashboard.showPaymentMethods()">
                         <div class="action-icon">
                             <i class="fas fa-wallet"></i>
                         </div>
                         <h3>Payment Methods</h3>
                         <p>Manage your payment options</p>
                     </a>
-                    <a href="#" class="action-card">
+                    <a href="#" class="action-card" onclick="dashboard.showSupport()">
                         <div class="action-icon">
                             <i class="fas fa-headset"></i>
                         </div>
@@ -113,25 +1178,71 @@
                 </div>
             </section>
 
-            <!-- Flight History -->
+            <!-- Miles Activity -->
             <section class="dashboard-section">
-                <h2 class="section-title">Recent Flights</h2>
-                <div class="table-container">
-                    <table class="flight-table">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Flight</th>
-                                <th>From</th>
-                                <th>To</th>
-                                <th>Status</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="flightHistory">
-                            <!-- Flight history will be generated by JavaScript -->
-                        </tbody>
-                    </table>
+                <h2 class="section-title">Recent Miles Activity</h2>
+                <div class="miles-activity" id="milesActivity">
+                    <!-- Miles activity will be generated by JavaScript -->
+                </div>
+                <div style="margin-top: 20px; text-align: center;">
+                    <button class="btn-outline btn-sm" onclick="dashboard.viewAllActivity()">View All Activity</button>
+                </div>
+            </section>
+        </div>
+
+        <!-- Flight History -->
+        <section class="dashboard-section">
+            <div class="section-header">
+                <h2 class="section-title">Flight History</h2>
+                <div class="section-filters">
+                    <select id="dateRange" onchange="dashboard.filterByDate(this.value)">
+                        <option value="all">All Time</option>
+                        <option value="last30">Last 30 Days</option>
+                        <option value="last90">Last 90 Days</option>
+                        <option value="last365">Last Year</option>
+                    </select>
+                </div>
+            </div>
+            <div class="table-container">
+                <table class="flight-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Flight</th>
+                            <th>From</th>
+                            <th>To</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="flightHistory">
+                        <!-- Flight history will be generated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Additional Widgets -->
+        <div class="dashboard-grid">
+            <!-- Special Offers -->
+            <section class="dashboard-section">
+                <h2 class="section-title">Special Offers For You</h2>
+                <div class="offers-grid-small" id="specialOffers">
+                    <!-- Special offers will be generated by JavaScript -->
+                </div>
+            </section>
+
+            <!-- Weather & Notifications -->
+            <section class="dashboard-section">
+                <h2 class="section-title">Travel Information</h2>
+                <div class="weather-widget" id="weatherInfo">
+                    <!-- Weather info will be generated by JavaScript -->
+                </div>
+                <div style="margin-top: 20px;">
+                    <h3 style="margin-bottom: 15px; font-size: 1.2rem;">Notifications</h3>
+                    <div class="notifications-list" id="notifications">
+                        <!-- Notifications will be generated by JavaScript -->
+                    </div>
                 </div>
             </section>
         </div>
@@ -148,9 +1259,9 @@
                     <h4>Dashboard</h4>
                     <ul>
                         <li><a href="dashboard.html">Overview</a></li>
-                        <li><a href="#">My Bookings</a></li>
-                        <li><a href="#">My Profile</a></li>
-                        <li><a href="#">Support</a></li>
+                        <li><a href="#" onclick="dashboard.showBookings()">My Bookings</a></li>
+                        <li><a href="#" onclick="dashboard.showProfile()">My Profile</a></li>
+                        <li><a href="#" onclick="dashboard.showSupport()">Support</a></li>
                     </ul>
                 </div>
                 <div class="footer-contact">
@@ -161,139 +1272,64 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2023 Rwanda Air. All rights reserved.</p>
+                <p>&copy; 2024 Rwanda Air. All rights reserved. | <a href="#">Terms</a> | <a href="#">Privacy</a></p>
             </div>
         </div>
     </footer>
 
+    <!-- Toast Container for Notifications -->
+    <div class="toast-container"></div>
+
     <script src="js/auth.js"></script>
+    <script src="js/dashboard.js"></script>
     <script>
         // Mobile menu toggle
         document.querySelector('.menu-toggle').addEventListener('click', function() {
             document.querySelector('.nav-links').classList.toggle('active');
         });
-        
-        // Dashboard data - In a real app, this would come from an API
-        document.addEventListener('DOMContentLoaded', function() {
-            // Upcoming flights data
-            const upcomingFlights = [
-                {
-                    id: 1,
-                    flightNumber: "WB 501",
-                    departure: "Kigali (KGL)",
-                    destination: "Nairobi (NBO)",
-                    date: "2023-12-15",
-                    time: "08:30",
-                    status: "Confirmed"
-                },
-                {
-                    id: 2,
-                    flightNumber: "WB 702",
-                    departure: "Kigali (KGL)",
-                    destination: "Dubai (DXB)",
-                    date: "2023-12-22",
-                    time: "14:15",
-                    status: "Confirmed"
-                },
-                {
-                    id: 3,
-                    flightNumber: "WB 305",
-                    departure: "Nairobi (NBO)",
-                    destination: "Kigali (KGL)",
-                    date: "2024-01-05",
-                    time: "18:45",
-                    status: "Confirmed"
-                }
-            ];
-            
-            // Flight history data
-            const flightHistory = [
-                {
-                    date: "2023-10-10",
-                    flight: "WB 401",
-                    from: "Kigali",
-                    to: "Johannesburg",
-                    status: "Completed"
-                },
-                {
-                    date: "2023-09-22",
-                    flight: "WB 202",
-                    from: "Nairobi",
-                    to: "Kigali",
-                    status: "Completed"
-                },
-                {
-                    date: "2023-08-15",
-                    flight: "WB 603",
-                    from: "Kigali",
-                    to: "Addis Ababa",
-                    status: "Completed"
-                },
-                {
-                    date: "2023-07-30",
-                    flight: "WB 801",
-                    from: "Kigali",
-                    to: "London",
-                    status: "Completed"
-                }
-            ];
-            
-            // Populate upcoming flights
-            const upcomingFlightsContainer = document.getElementById('upcomingFlights');
-            upcomingFlights.forEach(flight => {
-                const flightCard = document.createElement('div');
-                flightCard.className = 'flight-card';
-                flightCard.innerHTML = `
-                    <div class="flight-card-header">
-                        <h3>${flight.flightNumber}</h3>
-                        <span class="status-badge ${flight.status.toLowerCase()}">${flight.status}</span>
-                    </div>
-                    <div class="flight-card-body">
-                        <div class="flight-route">
-                            <div class="flight-from">
-                                <h4>${flight.departure}</h4>
-                                <p>${flight.date} | ${flight.time}</p>
-                            </div>
-                            <div class="flight-icon">
-                                <i class="fas fa-plane"></i>
-                            </div>
-                            <div class="flight-to">
-                                <h4>${flight.destination}</h4>
-                                <p>${flight.date} | ${getArrivalTime(flight.time)}</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="flight-card-footer">
-                        <button class="btn-outline">View Details</button>
-                        <button class="btn-primary">Check-in</button>
-                    </div>
-                `;
-                upcomingFlightsContainer.appendChild(flightCard);
-            });
-            
-            // Populate flight history
-            const flightHistoryContainer = document.getElementById('flightHistory');
-            flightHistory.forEach(flight => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${flight.date}</td>
-                    <td>${flight.flight}</td>
-                    <td>${flight.from}</td>
-                    <td>${flight.to}</td>
-                    <td><span class="status-badge completed">${flight.status}</span></td>
-                    <td><a href="#" class="text-link">View Receipt</a></td>
-                `;
-                flightHistoryContainer.appendChild(row);
-            });
-            
-            // Helper function to calculate arrival time
-            function getArrivalTime(departureTime) {
-                // Simplified calculation - in real app, this would use actual flight duration
-                const [hours, minutes] = departureTime.split(':').map(Number);
-                let arrivalHours = hours + 3; // Assume 3 hour flight
-                if (arrivalHours >= 24) arrivalHours -= 24;
-                return `${arrivalHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+
+        // Dark mode toggle
+        document.getElementById('darkModeToggle').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.body.classList.toggle('dark-mode');
+            const icon = this.querySelector('i');
+            if (document.body.classList.contains('dark-mode')) {
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+                localStorage.setItem('darkMode', 'enabled');
+            } else {
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+                localStorage.setItem('darkMode', 'disabled');
             }
+        });
+
+        // Check for saved dark mode preference
+        if (localStorage.getItem('darkMode') === 'enabled') {
+            document.body.classList.add('dark-mode');
+            document.querySelector('#darkModeToggle i').classList.remove('fa-moon');
+            document.querySelector('#darkModeToggle i').classList.add('fa-sun');
+        }
+
+        // Logout functionality
+        document.getElementById('logoutBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            if (auth) {
+                auth.logout();
+            }
+        });
+
+        // Initialize dashboard when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is logged in
+            const currentUser = localStorage.getItem('currentUser');
+            if (!currentUser) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // Initialize dashboard
+            window.dashboard = new Dashboard();
         });
     </script>
 </body>
