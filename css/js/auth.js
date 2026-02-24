@@ -1,207 +1,279 @@
-// Authentication functionality for Rwanda Air website
+// js/auth.js - Enhanced Authentication System
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Check if user is already logged in
-    checkAuthStatus();
-    
-    // Login form submission
-    const loginForm = document.getElementById('loginForm');
-    if (loginForm) {
-        loginForm.addEventListener('submit', handleLogin);
+class AuthSystem {
+    constructor() {
+        this.users = JSON.parse(localStorage.getItem('users')) || [];
+        this.currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
+        this.init();
     }
-    
-    // Toggle password visibility
-    const togglePassword = document.getElementById('togglePassword');
-    if (togglePassword) {
-        togglePassword.addEventListener('click', function() {
-            const passwordInput = document.getElementById('password');
-            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordInput.setAttribute('type', type);
-            this.classList.toggle('fa-eye');
-            this.classList.toggle('fa-eye-slash');
+
+    init() {
+        this.updateUI();
+        this.setupEventListeners();
+        this.checkAuth();
+    }
+
+    setupEventListeners() {
+        // Login form
+        const loginForm = document.getElementById('loginForm');
+        if (loginForm) {
+            loginForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.login();
+            });
+        }
+
+        // Register form
+        const registerForm = document.getElementById('registerForm');
+        if (registerForm) {
+            registerForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.register();
+            });
+        }
+
+        // Logout button
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.logout();
+            });
+        }
+
+        // Password toggle
+        document.querySelectorAll('.password-toggle').forEach(toggle => {
+            toggle.addEventListener('click', (e) => {
+                const input = e.target.closest('.form-group').querySelector('input');
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    e.target.classList.remove('fa-eye');
+                    e.target.classList.add('fa-eye-slash');
+                } else {
+                    input.type = 'password';
+                    e.target.classList.remove('fa-eye-slash');
+                    e.target.classList.add('fa-eye');
+                }
+            });
         });
     }
-    
-    // Logout functionality
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', handleLogout);
-    }
-    
-    // Register link (simulated)
-    const registerLink = document.getElementById('registerLink');
-    if (registerLink) {
-        registerLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            alert('Registration functionality would be implemented here. For this demo, please use "demo@rwandair.com" and "password123" to login.');
-        });
-    }
-});
 
-// Handle login form submission
-function handleLogin(e) {
-    e.preventDefault();
-    
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    
-    // Simple validation
-    if (!email || !password) {
-        showAlert('Please fill in all fields', 'error');
-        return;
+    login() {
+        const email = document.getElementById('email')?.value;
+        const password = document.getElementById('password')?.value;
+        const remember = document.getElementById('remember')?.checked;
+
+        if (!email || !password) {
+            this.showToast('Please fill in all fields', 'error');
+            return;
+        }
+
+        // Simulate API call
+        setTimeout(() => {
+            const user = this.users.find(u => u.email === email && u.password === password);
+            
+            if (user) {
+                this.currentUser = user;
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                if (remember) {
+                    localStorage.setItem('rememberedUser', email);
+                }
+                
+                this.showToast('Login successful!', 'success');
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 1500);
+            } else {
+                this.showToast('Invalid email or password', 'error');
+            }
+        }, 1000);
     }
-    
-    // For demo purposes, accept a specific email/password
-    // In a real application, this would connect to an authentication API
-    if (email === 'demo@rwandair.com' && password === 'password123') {
-        // Store user data in localStorage (simulating authentication)
-        const userData = {
-            email: email,
-            name: 'Alex Johnson',
-            isAuthenticated: true,
-            token: 'demo_token_' + Date.now()
+
+    register() {
+        const name = document.getElementById('name')?.value;
+        const email = document.getElementById('email')?.value;
+        const password = document.getElementById('password')?.value;
+        const confirmPassword = document.getElementById('confirmPassword')?.value;
+
+        if (!name || !email || !password || !confirmPassword) {
+            this.showToast('Please fill in all fields', 'error');
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            this.showToast('Passwords do not match', 'error');
+            return;
+        }
+
+        if (password.length < 6) {
+            this.showToast('Password must be at least 6 characters', 'error');
+            return;
+        }
+
+        // Check if user exists
+        if (this.users.some(u => u.email === email)) {
+            this.showToast('Email already registered', 'error');
+            return;
+        }
+
+        // Create new user
+        const newUser = {
+            id: Date.now(),
+            name,
+            email,
+            password,
+            tier: 'Silver',
+            miles: 0,
+            bookings: [],
+            preferences: {
+                meal: 'regular',
+                seat: 'any',
+                notifications: true
+            }
         };
-        
-        localStorage.setItem('rwandair_user', JSON.stringify(userData));
-        
-        // Show success message and redirect to dashboard
-        showAlert('Login successful! Redirecting to dashboard...', 'success');
-        
+
+        this.users.push(newUser);
+        localStorage.setItem('users', JSON.stringify(this.users));
+
+        this.showToast('Registration successful! Please login.', 'success');
         setTimeout(() => {
-            window.location.href = 'dashboard.html';
-        }, 1500);
-    } else {
-        // For demo purposes, accept any email with password "password123"
-        if (password === 'password123') {
-            // Extract name from email for demo
-            const name = email.split('@')[0];
-            const formattedName = name.charAt(0).toUpperCase() + name.slice(1);
-            
-            // Store user data in localStorage
-            const userData = {
-                email: email,
-                name: formattedName,
-                isAuthenticated: true,
-                token: 'demo_token_' + Date.now()
-            };
-            
-            localStorage.setItem('rwandair_user', JSON.stringify(userData));
-            
-            // Show success message and redirect to dashboard
-            showAlert('Login successful! Redirecting to dashboard...', 'success');
-            
-            setTimeout(() => {
-                window.location.href = 'dashboard.html';
-            }, 1500);
-        } else {
-            showAlert('Invalid email or password. For demo, use "demo@rwandair.com" and "password123"', 'error');
-        }
-    }
-}
-
-// Handle logout
-function handleLogout(e) {
-    e.preventDefault();
-    
-    // Clear user data from localStorage
-    localStorage.removeItem('rwandair_user');
-    
-    // Redirect to home page
-    showAlert('Logged out successfully', 'success');
-    
-    setTimeout(() => {
-        window.location.href = 'index.html';
-    }, 1000);
-}
-
-// Check authentication status
-function checkAuthStatus() {
-    const userData = localStorage.getItem('rwandair_user');
-    
-    if (userData) {
-        const user = JSON.parse(userData);
-        
-        // Update user name in dashboard if on dashboard page
-        const userNameElement = document.getElementById('userName');
-        if (userNameElement) {
-            userNameElement.textContent = user.name;
-        }
-        
-        // If on login page and already logged in, redirect to dashboard
-        if (window.location.pathname.includes('login.html') && user.isAuthenticated) {
-            window.location.href = 'dashboard.html';
-        }
-    } else {
-        // If on dashboard page and not logged in, redirect to login
-        if (window.location.pathname.includes('dashboard.html')) {
             window.location.href = 'login.html';
+        }, 1500);
+    }
+
+    logout() {
+        this.currentUser = null;
+        localStorage.removeItem('currentUser');
+        this.showToast('Logged out successfully', 'info');
+        setTimeout(() => {
+            window.location.href = 'index.html';
+        }, 1500);
+    }
+
+    checkAuth() {
+        const protectedPages = ['dashboard.html', 'profile.html', 'bookings.html'];
+        const currentPage = window.location.pathname.split('/').pop();
+
+        if (protectedPages.includes(currentPage) && !this.currentUser) {
+            this.showToast('Please login to access this page', 'warning');
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 1500);
         }
+
+        if (this.currentUser) {
+            this.updateUserUI();
+        }
+    }
+
+    updateUserUI() {
+        if (this.currentUser) {
+            document.querySelectorAll('.user-name').forEach(el => {
+                el.textContent = this.currentUser.name;
+            });
+
+            // Update dashboard if on dashboard page
+            if (window.location.pathname.includes('dashboard.html')) {
+                document.getElementById('userName').textContent = this.currentUser.name;
+                document.getElementById('tierStatus').textContent = this.currentUser.tier;
+                document.getElementById('milesCount').textContent = this.currentUser.miles.toLocaleString();
+            }
+        }
+    }
+
+    updateUI() {
+        const userMenu = document.querySelector('.user-menu');
+        const loginBtn = document.querySelector('.login-btn');
+
+        if (this.currentUser) {
+            if (userMenu) {
+                userMenu.innerHTML = `
+                    <button class="user-menu-btn">
+                        <i class="fas fa-user-circle"></i>
+                        <span class="user-name">${this.currentUser.name}</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="user-dropdown">
+                        <a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                        <a href="profile.html"><i class="fas fa-user"></i> Profile</a>
+                        <a href="bookings.html"><i class="fas fa-ticket-alt"></i> My Bookings</a>
+                        <a href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    </div>
+                `;
+                this.setupUserMenu();
+            }
+            if (loginBtn) loginBtn.style.display = 'none';
+        } else {
+            if (userMenu) userMenu.style.display = 'none';
+            if (loginBtn) loginBtn.style.display = 'inline-block';
+        }
+    }
+
+    setupUserMenu() {
+        const userMenuBtn = document.querySelector('.user-menu-btn');
+        const userDropdown = document.querySelector('.user-dropdown');
+
+        if (userMenuBtn) {
+            userMenuBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                userDropdown.classList.toggle('show');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!userMenuBtn.contains(e.target)) {
+                    userDropdown.classList.remove('show');
+                }
+            });
+        }
+
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.logout();
+            });
+        }
+    }
+
+    showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerHTML = `
+            <div class="toast-icon">
+                <i class="fas fa-${this.getToastIcon(type)}"></i>
+            </div>
+            <div class="toast-message">${message}</div>
+            <button class="toast-close"><i class="fas fa-times"></i></button>
+        `;
+
+        let container = document.querySelector('.toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.className = 'toast-container';
+            document.body.appendChild(container);
+        }
+
+        container.appendChild(toast);
+
+        setTimeout(() => {
+            toast.remove();
+        }, 3000);
+
+        toast.querySelector('.toast-close').addEventListener('click', () => {
+            toast.remove();
+        });
+    }
+
+    getToastIcon(type) {
+        const icons = {
+            success: 'check-circle',
+            error: 'exclamation-circle',
+            warning: 'exclamation-triangle',
+            info: 'info-circle'
+        };
+        return icons[type] || 'info-circle';
     }
 }
 
-// Show alert message
-function showAlert(message, type) {
-    // Remove any existing alerts
-    const existingAlert = document.querySelector('.alert');
-    if (existingAlert) {
-        existingAlert.remove();
-    }
-    
-    // Create alert element
-    const alert = document.createElement('div');
-    alert.className = `alert alert-${type}`;
-    alert.textContent = message;
-    
-    // Style the alert
-    alert.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 15px 20px;
-        border-radius: 8px;
-        color: white;
-        font-weight: 500;
-        z-index: 9999;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        animation: slideIn 0.3s ease;
-    `;
-    
-    // Set background color based on type
-    if (type === 'success') {
-        alert.style.backgroundColor = '#28a745';
-    } else if (type === 'error') {
-        alert.style.backgroundColor = '#dc3545';
-    } else {
-        alert.style.backgroundColor = '#17a2b8';
-    }
-    
-    // Add to page
-    document.body.appendChild(alert);
-    
-    // Remove after 3 seconds
-    setTimeout(() => {
-        alert.style.animation = 'slideOut 0.3s ease';
-        setTimeout(() => {
-            if (alert.parentNode) {
-                alert.parentNode.removeChild(alert);
-            }
-        }, 300);
-    }, 3000);
-    
-    // Add CSS animations if not already present
-    if (!document.querySelector('#alert-animations')) {
-        const style = document.createElement('style');
-        style.id = 'alert-animations';
-        style.textContent = `
-            @keyframes slideIn {
-                from { transform: translateX(100%); opacity: 0; }
-                to { transform: translateX(0); opacity: 1; }
-            }
-            @keyframes slideOut {
-                from { transform: translateX(0); opacity: 1; }
-                to { transform: translateX(100%); opacity: 0; }
-            }
-        `;
-        document.head.appendChild(style);
-    }
-}
+// Initialize auth system
+const auth = new AuthSystem();
